@@ -36,11 +36,26 @@ function setHzAndTime(soundStr) {
             case "7":
                 hz = 493.9; // 低音 B
                 break;
+            case "-":
+                time++;
+                break;
+            case "^":
+                time /= 2;
+                break;
+            case ".":
+                time *= 1.5;
+                break;
+            case ",":
+                hz /= 2;
+                break;
+            case "'":
+                hz *= 2;
+                break;
         }
     }
     return {
         hz: hz,
-        time: time
+        time: time * 0.75
     };
 }
 class sound {
@@ -56,6 +71,11 @@ class sound {
         }
     }
     play(startTime) {
+        if (this.hz == 0) {
+            setTimeout(() => {
+            }, this.time);
+            return;
+        }
         const oscillator = audioCtx.createOscillator();
         oscillator.type = 'sine';
         oscillator.frequency.value = this.hz;
@@ -75,6 +95,7 @@ function updateSoundArr(soundText) {
 var playBtn = document.getElementById("playBtn");
 if (playBtn) {
     playBtn.addEventListener("click", () => __awaiter(void 0, void 0, void 0, function* () {
+        soundArr = [];
         if (score instanceof HTMLTextAreaElement) {
             updateSoundArr(score.value);
         }
