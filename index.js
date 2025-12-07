@@ -10,6 +10,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 var score = document.getElementById("score");
 const audioCtx = new AudioContext();
+let modelData;
+fetch("model.json")
+    .then(res => res.json())
+    .then(data => {
+    modelData = data;
+});
 function setHzAndTime(soundStr) {
     let hz = 0;
     let time = 1;
@@ -111,4 +117,52 @@ if (playBtn) {
 }
 else {
     throw new Error("找不到playBtn");
+}
+function aiMax(model) {
+    let max = 0;
+    for (let m of model) {
+        if (!Array.isArray(m.after))
+            continue;
+        for (let a of m.after) {
+            if (typeof a.count === "number") {
+                if (a.count > max)
+                    max = a.count;
+            }
+        }
+    }
+    return max;
+}
+let aibtn = document.getElementById("aibtn");
+if (aibtn) {
+    aibtn === null || aibtn === void 0 ? void 0 : aibtn.addEventListener("click", () => {
+        if (!(score instanceof HTMLTextAreaElement))
+            return;
+        let soundArr = score.value.split(/\n|\s+/).filter(x => x);
+        // model 尚未讀到 JSON
+        if (!Array.isArray(modelData)) {
+            alert("模型還沒載入完成！");
+            return;
+        }
+        for (let i = 0; i < 30 - soundArr.length; i++) {
+            let now = soundArr[soundArr.length - 1];
+            now = now.trim();
+            console.log(now);
+            // 找現在這個音
+            let nowModel = modelData.find((x) => x.value === now);
+            if (!nowModel)
+                break; // 找不到就停
+            if (!Array.isArray(nowModel.after) || nowModel.after.length === 0)
+                break;
+            // 找最高 probability
+            let max = aiMax([nowModel]);
+            let choice = nowModel.after.find((x) => x.count === max);
+            if (!choice)
+                break;
+            soundArr.push(choice.note);
+        }
+        score.value = soundArr.join(" ");
+    });
+}
+else {
+    throw new Error("找不到aibtn");
 }

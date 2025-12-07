@@ -1,0 +1,67 @@
+[
+    {
+        "value": "2'",
+        "after": [
+            {
+                "note": "3'",
+                "count": 2
+            }
+        ]
+    },
+    {
+        "value": "3'",
+        "after": [
+            {
+                "note": "4'",
+                "count": 3
+            },
+            {
+                "note": "5",
+                "count": 2
+            }
+        ]
+    },
+    {
+        "value": "4'",
+        "after": [
+            {
+                "note": "4'",
+                "count": 3
+            },
+            {
+                "note": "3'",
+                "count": 1
+            },
+            {
+                "note": "6",
+                "count": 2
+            }
+        ]
+    },
+    {
+        "value": "5",
+        "after": [
+            {
+                "note": "3'",
+                "count": 1
+            },
+            {
+                "note": "2'",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "value": "6",
+        "after": [
+            {
+                "note": "4'",
+                "count": 1
+            },
+            {
+                "note": "3'",
+                "count": 1
+            }
+        ]
+    }
+]
