@@ -130,17 +130,36 @@ if(playBtn){
 }else{
     throw new Error("找不到playBtn");
 }
-function choose(model: any[]): string | undefined {
-    let r = Math.floor(Math.random() * 20);
+function choose(model: any[]): string {
+    if (!model || model.length === 0)
+        throw new Error("choose: model 空");
 
-    for (let m of model) {
-        if (!Array.isArray(m.after)) throw new Error("after不是array");
+    const after = model[0].after;
 
-        for (let a of m.after) {
-            if(r < a.count) return a.note;
-            r--;
-        }
+    if (!after || after.length === 0)
+        throw new Error("choose: after 空");
+
+    // 計算權重總和
+    let total = 0;
+    for (let a of after) {
+        if (typeof a.count !== "number" || a.count <= 0)
+            throw new Error("choose: count 非正常數值");
+        total += a.count;
     }
+
+    // 0～total 的亂數
+    let r = Math.random() * total;
+
+    // 找到 r 落在哪個區間
+    for (let a of after) {
+        if (r < a.count)
+            return a.note;
+
+        r -= a.count;
+    }
+
+    // 理論上永遠不會到這裡
+    throw new Error("choose: 達到不可能的狀態!");
 }
 
 let aibtn = document.getElementById("aibtn");
@@ -174,16 +193,12 @@ if(aibtn){
             if (!Array.isArray(nowModel.after) || nowModel.after.length === 0) break;
 
             // 依隨機數找 probability
-            let use = choose([nowModel]);
+            let next = choose([nowModel]);
 
-            let choice = nowModel.after.find((x:any)=>x.count === use);
+            if (!next)
+                throw new Error("choose 回傳 undefined（不可能）");
 
-            if (!choice) {
-                alert("抱歉，AI實作時發生錯誤");
-                throw new Error("糟糕!使用choose函式時r比所有count還小!!");
-            }
-
-            soundArr.push(choice.note);
+            soundArr.push(next);
         }
 
         score.value = soundArr.join(" ");
