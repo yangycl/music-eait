@@ -10,7 +10,7 @@ fetch("model.json")
     .then(data=>{
         modelData = data
     })
-;
+;//載入ai模型
 
 function setHzAndTime(soundStr: string): hzAndTime {
     let hz: number = 0;
@@ -130,20 +130,17 @@ if(playBtn){
 }else{
     throw new Error("找不到playBtn");
 }
-function aiMax(model: any[]): number {
-    let max = 0;
+function choose(model: any[]): string | undefined {
+    let r = Math.floor(Math.random() * 20);
 
     for (let m of model) {
-        if (!Array.isArray(m.after)) continue;
+        if (!Array.isArray(m.after)) throw new Error("after不是array");
 
         for (let a of m.after) {
-            if (typeof a.count === "number") {
-                if (a.count > max) max = a.count;
-            }
+            if(r < a.count) return a.note;
+            r--;
         }
     }
-
-    return max;
 }
 
 let aibtn = document.getElementById("aibtn");
@@ -152,6 +149,7 @@ if(aibtn){
 
         if (!(score instanceof HTMLTextAreaElement)) return;
 
+        
         let soundArr = score.value.split(/\n|\s+/).filter(x=>x);
 
         // model 尚未讀到 JSON
@@ -166,20 +164,24 @@ if(aibtn){
 
             now = now.trim();
             console.log(now);
+            let prev = soundArr[soundArr.length - 2];
 
             // 找現在這個音
-            let nowModel = modelData.find((x:any) => x.value === now);
+            let nowModel = modelData.find((x:any) => x.key === `${prev}|${now}`);
 
             if (!nowModel) break; // 找不到就停
 
             if (!Array.isArray(nowModel.after) || nowModel.after.length === 0) break;
 
-            // 找最高 probability
-            let max = aiMax([nowModel]);
+            // 依隨機數找 probability
+            let use = choose([nowModel]);
 
-            let choice = nowModel.after.find((x:any)=>x.count === max);
+            let choice = nowModel.after.find((x:any)=>x.count === use);
 
-            if (!choice) break;
+            if (!choice) {
+                alert("抱歉，AI實作時發生錯誤");
+                throw new Error("糟糕!使用choose函式時r比所有count還小!!");
+            }
 
             soundArr.push(choice.note);
         }

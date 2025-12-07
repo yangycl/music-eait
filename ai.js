@@ -3,31 +3,36 @@ let model = [];
 fetch("model.json")
     .then(res => res.json())
     .then(data => {
-    modelData = data || [];
+    model = data || [];
 });
 function train(notes) {
-    for (let i = 0; i < notes.length - 1; i++) {
-        const now = notes[i];
-        const next = notes[i + 1];
-        let m = model.find(x => x.value === now);
+    for (let i = 0; i < notes.length - 2; i++) {
+        const prev = notes[i];
+        const now = notes[i + 1];
+        const next = notes[i + 2];
+        const key = `${prev}|${now}`;
+        let m = model.find(x => x.key === key);
         if (!m) {
             model.push({
-                value: now,
+                key,
                 after: [{ note: next, count: 1 }]
             });
         }
         else {
             let a = m.after.find(x => x.note === next);
-            if (a) {
+            if (a)
                 a.count++;
-            }
-            else {
-                m.after.push({
-                    note: next,
-                    count: 1
-                });
-            }
+            else
+                m.after.push({ note: next, count: 1 });
         }
+    }
+    // 加終止符號
+    const END = "<END>";
+    if (notes.length >= 2) {
+        model.push({
+            key: `${notes[notes.length - 2]}|${notes[notes.length - 1]}`,
+            after: [{ note: END, count: 1 }]
+        });
     }
 }
 window.addEventListener("keydown", function (event) {

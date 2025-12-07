@@ -15,7 +15,7 @@ fetch("model.json")
     .then(res => res.json())
     .then(data => {
     modelData = data;
-});
+}); //載入ai模型
 function setHzAndTime(soundStr) {
     let hz = 0;
     let time = 1;
@@ -118,19 +118,17 @@ if (playBtn) {
 else {
     throw new Error("找不到playBtn");
 }
-function aiMax(model) {
-    let max = 0;
+function choose(model) {
+    let r = Math.floor(Math.random() * 20);
     for (let m of model) {
         if (!Array.isArray(m.after))
-            continue;
+            throw new Error("after不是array");
         for (let a of m.after) {
-            if (typeof a.count === "number") {
-                if (a.count > max)
-                    max = a.count;
-            }
+            if (r < a.count)
+                return a.note;
+            r--;
         }
     }
-    return max;
 }
 let aibtn = document.getElementById("aibtn");
 if (aibtn) {
@@ -147,17 +145,20 @@ if (aibtn) {
             let now = soundArr[soundArr.length - 1];
             now = now.trim();
             console.log(now);
+            let prev = soundArr[soundArr.length - 2];
             // 找現在這個音
-            let nowModel = modelData.find((x) => x.value === now);
+            let nowModel = modelData.find((x) => x.key === `${prev}|${now}`);
             if (!nowModel)
                 break; // 找不到就停
             if (!Array.isArray(nowModel.after) || nowModel.after.length === 0)
                 break;
-            // 找最高 probability
-            let max = aiMax([nowModel]);
-            let choice = nowModel.after.find((x) => x.count === max);
-            if (!choice)
-                break;
+            // 依隨機數找 probability
+            let use = choose([nowModel]);
+            let choice = nowModel.after.find((x) => x.count === use);
+            if (!choice) {
+                alert("抱歉，AI實作時發生錯誤");
+                throw new Error("糟糕!使用choose函式時r比所有count還小!!");
+            }
             soundArr.push(choice.note);
         }
         score.value = soundArr.join(" ");
